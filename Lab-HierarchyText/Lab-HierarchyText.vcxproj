@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\TList\TStackList.h" />
+    <ClInclude Include="Control.h" />
     <ClInclude Include="TText.h" />
   </ItemGroup>
   <ItemGroup>

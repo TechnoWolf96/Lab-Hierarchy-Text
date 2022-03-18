@@ -90,8 +90,14 @@ inline void TText::PrintFileRecursion(Node* pNode, ofstream& file)
 	if (pNode != nullptr)
 	{
 		file << pNode->str << endl;
-		PrintFileRecursion(pNode->pDown, file);
-		PrintFileRecursion(pNode->pDown, file);
+		if (pNode->pDown != nullptr)
+		{
+			file << '{' << endl;
+			PrintFileRecursion(pNode->pDown, file);
+			file << '}' << endl;
+		}
+			
+		PrintFileRecursion(pNode->pNext, file);
 	}
 }
 

@@ -5,9 +5,10 @@
 int main()
 {
 	char filename[100] = "text.txt\0";
+	char test[100] = "test.txt\0";
 
 	TText text;
-	text.Load(filename);
+	text.Load(test);
 
 	text.GoFirst();
 	char str[81] = "DownSection";
@@ -21,10 +22,15 @@ int main()
 	text.InsertDownLine(str3);
 
 	char str4[81] = "NextSection";
+
+
+
+
+
 	text.InsertNextSection(str4);
 
 	text.Print();
-	//text.Print(filename);
+	//text.Print(test);
 
 
 }
