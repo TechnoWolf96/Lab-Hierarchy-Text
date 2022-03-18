@@ -26,7 +26,7 @@ class TText
 {
 private:
 	Node* pFirst, * pCurrent;
-	TStackList<Node*> stack;
+	TStackList<Node*> navStack, ptStack;
 
 	Node* ReadRecursion(ifstream& is);
 	void PrintFileRecursion(Node* pNode, ofstream& os);
@@ -39,11 +39,16 @@ public:
 		pCurrent = nullptr;
 	}
 
-	// Navigation
+	void Reset();
 	void GoNext();
-	void GoBack();
-	void GoDown();
-	void GoFirst();
+	bool IsEnd();
+
+
+	// Navigation
+	void GoNextLine();
+	void GoBackLine();
+	void GoDownLine();
+	void GoFirstLine();
 
 	void InsertNextLine(char* str); // Insert string after current 
 	void InsertNextSection(char* str); // Insert string to the same level with subjection next lines
@@ -115,28 +120,52 @@ inline void TText::PrintRecursion(Node* pNode, ostream& os, int level)
 	}
 }
 
+inline void TText::Reset()
+{
+	navStack.Clear();
+	if (pFirst == nullptr) return;
+	pCurrent = pFirst;
+	navStack.Push(pCurrent);
+	if (pCurrent->pNext != nullptr) navStack.Push(pCurrent->pNext);
+	if (pCurrent->pDown != nullptr) navStack.Push(pCurrent->pDown);
+}
+
 inline void TText::GoNext()
 {
+	pCurrent = navStack.Pop();
+	if (pCurrent == pFirst) return;
+	if (pCurrent->pNext != nullptr) navStack.Push(pCurrent->pNext);
+	if (pCurrent->pDown != nullptr) navStack.Push(pCurrent->pDown);
+
+}
+
+inline bool TText::IsEnd()
+{
+	return navStack.IsEmpty();
+}
+
+inline void TText::GoNextLine()
+{
 	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	stack.Push(pCurrent);
+	navStack.Push(pCurrent);
 	pCurrent = pCurrent->pNext;
 }
 
-inline void TText::GoBack()
+inline void TText::GoBackLine()
 {
 	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	Node* backNode = stack.Pop();
+	Node* backNode = navStack.Pop();
 	pCurrent = backNode;
 }
 
-inline void TText::GoDown()
+inline void TText::GoDownLine()
 {
 	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	stack.Push(pCurrent);
+	navStack.Push(pCurrent);
 	pCurrent = pCurrent->pDown;
 }
 
-inline void TText::GoFirst()
+inline void TText::GoFirstLine()
 {
 	pCurrent = pFirst;
 }

@@ -10,11 +10,13 @@ int main()
 	TText text;
 	text.Load(test);
 
-	text.GoFirst();
+	text.GoFirstLine();
 	char str[81] = "DownSection";
 	text.InsertDownSection(str);
 
-	text.GoNext();
+
+
+	text.GoNextLine();
 	char str2[81] = "NextLine";
 	text.InsertNextLine(str2);
 
