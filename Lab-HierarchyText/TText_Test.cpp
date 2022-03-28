@@ -10,7 +10,7 @@
 #define DELETE 83
 #define ENTER 13
 
-//TMemory mem;
+TMemory TTextNode::memory;
 
 
 int main()
@@ -25,7 +25,7 @@ begin:
 		cout << "Enter filename: ";
 		cin >> filename;
 
-		TText text;
+		TText text(30);
 		text.Load(filename);
 		text.GoFirstLine();
 		
@@ -34,7 +34,7 @@ begin:
 		{
 			clrscr();
 			cout << "Navigation: |v|>|<| ; INSERT - Insert line; ENTER - Update line;" << endl;
-			cout << "DELETE - Delete line; S - Save text; ESC - Close text." << endl;
+			cout << "DELETE - Delete line; S - Save text; M - Show free memory; C - Clean memory; ESC - Close text." << endl;
 			text.Print();
 
 			if (saved) cout << "Text saved." << endl;
@@ -43,9 +43,12 @@ begin:
 			char control = _getch();
 			switch (control)
 			{
-			case DOWN: try { text.GoNextLine(); } catch (...) {} break;
-			case UP: try { text.GoBackLine(); } catch (...){} break;
-			case NEXT: try { text.GoDownLine(); } catch (...) {} break;
+			case DOWN: try { text.GoNextLine(); }
+					 catch (...) {} break;
+			case UP: try { text.GoBackLine(); }
+				   catch (...) {} break;
+			case NEXT: try { text.GoDownLine(); }
+					 catch (...) {} break;
 
 			case INSERT:
 			{
@@ -64,8 +67,8 @@ begin:
 				}
 				break;
 			}
-				
-				
+
+
 			case ENTER:
 				char str[81];
 				cout << "Enter new line: ";
@@ -95,8 +98,23 @@ begin:
 				}
 				break;
 			}
-				
+
+			case 'm':
+				cout << "Free memory:" << endl;
+				TTextNode::PrintFree();
+				cout << "Press any key to continue." << endl;
+				_getch();
+				break;
+
+			case 'c':
+				text.CleanMemory();
+				cout << "Memory cleaned. Press any key to continue." << endl;
+				_getch();
+				break;
+
 			}
+
+
 		}
 	}
 }

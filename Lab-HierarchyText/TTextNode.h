@@ -3,20 +3,19 @@
 #include <cstring>
 using namespace std;
 
-/*
+
 struct TTextNode;
 
 struct TMemory
 {
 	TTextNode* pFirst;
 	TTextNode* pFree;
-	TTextNode *pLast;
+	TTextNode* pLast;
 };
-*/
 
 struct TTextNode
 {
-	//static TMemory memory;
+	static TMemory memory;
 	char str[81];
 	TTextNode* pNext, * pDown;
 	bool garbage;
@@ -28,22 +27,25 @@ struct TTextNode
 		if (str == nullptr) this->str[0] = '\0';
 		else strcpy(this->str, str);
 	}
-	/*
+
 	static void InitializeMemory(size_t size)
 	{
-		memory.pFirst = (TTextNode*)new char[sizeof(TTextNode) * size];
+		memory.pFirst = (TTextNode*) new char[size * sizeof(TTextNode)];
 		memory.pFree = memory.pFirst;
 		memory.pLast = memory.pFirst + (size - 1);
-		for (TTextNode* p = memory.pFirst; p != memory.pLast; p++)
+		TTextNode* p = memory.pFirst;
+		for (int i = 0; i < size - 1; i++)
 		{
-			p->str[0] = '\0';
 			p->pNext = p + 1;
+			strcpy(p->str, "empty");
 			p->garbage = true;
+
+			p += 1;
 		}
 		memory.pLast->pNext = nullptr;
-		memory.pLast->str[0] = '\0';
-		memory.pLast->garbage = true;
+		strcpy(memory.pLast->str, "empty");
 	}
+
 	static void PrintFree()
 	{
 		TTextNode* p = memory.pFree;
@@ -58,9 +60,10 @@ struct TTextNode
 
 	void* operator new(size_t size)
 	{
-		TTextNode* res = memory.pFree;
-		if (res != nullptr) memory.pFree = memory.pFree->pNext;
-		return res;
+		TTextNode* tmp = memory.pFree;
+		if (tmp == nullptr) throw "Have not memory";
+		memory.pFree = memory.pFree->pNext;
+		return tmp;
 	}
 	void operator delete(void* p)
 	{
@@ -68,7 +71,7 @@ struct TTextNode
 		pNode->pNext = memory.pFree;
 		memory.pFree = pNode;
 	}
-	*/
+
 	~TTextNode() {}
 
 };

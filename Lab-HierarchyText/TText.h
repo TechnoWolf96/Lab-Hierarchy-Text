@@ -16,16 +16,18 @@ private:
 	TTextNode* ReadRecursion(ifstream& is);
 	void PrintFileRecursion(TTextNode* pNode, ofstream& os);
 	void PrintRecursion(TTextNode* pNode, ostream& os, int level);
-	void CleanMemory();
+	
 	
 public:
-	TText()
+	TText(int memorySize = 100)
 	{
 		pFirst = nullptr;
 		navCurrent = nullptr;
 		ptCurrent = nullptr;
-		//TTextNode::InitializeMemory(1000);
+		TTextNode::InitializeMemory(memorySize);
 	}
+
+	void CleanMemory();
 
 	char* GetNavCurrent();
 	void SetNavCurrent(char* str);
@@ -119,7 +121,7 @@ inline void TText::PrintRecursion(TTextNode* pNode, ostream& os, int level)
 		PrintRecursion(pNode->pNext, os, level);
 	}
 }
-/*
+
 inline void TText::CleanMemory()
 {
 	for (Reset(); !IsEnd(); GoNext()) ptCurrent->garbage = false;
@@ -135,7 +137,7 @@ inline void TText::CleanMemory()
 		p->garbage = true;
 	}
 }
-*/
+
 
 inline char* TText::GetNavCurrent()
 {
