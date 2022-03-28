@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 
+
 void clrscr(void)
 {
 	HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);

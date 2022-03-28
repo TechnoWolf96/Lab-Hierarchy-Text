@@ -1,48 +1,42 @@
 #pragma once
-#include <iostream>
-#include <cstring>
 #include <fstream>
 #include "../TList/TStackList.h"
+#include "TTextNode.h"
 using namespace std;
 
-struct Node
-{
-	char str[81];
-	Node* pNext, * pDown;
 
-	Node(char* str = nullptr)
-	{
-		this->pNext = nullptr;
-		this->pDown = nullptr;
-		if (str == nullptr) this->str[0] = '\0';
-		else strcpy(this->str, str);
-	}
-	~Node(){}
-
-};
 
 
 class TText
 {
 private:
-	Node* pFirst, * pCurrent;
-	TStackList<Node*> navStack, ptStack;
+	TTextNode* pFirst, * navCurrent, *ptCurrent;
+	TStackList<TTextNode*> navStack, ptStack;
 
-	Node* ReadRecursion(ifstream& is);
-	void PrintFileRecursion(Node* pNode, ofstream& os);
-	void PrintRecursion(Node* pNode, ostream& os, int level);
+	TTextNode* ReadRecursion(ifstream& is);
+	void PrintFileRecursion(TTextNode* pNode, ofstream& os);
+	void PrintRecursion(TTextNode* pNode, ostream& os, int level);
+	void CleanMemory();
 	
 public:
 	TText()
 	{
 		pFirst = nullptr;
-		pCurrent = nullptr;
+		navCurrent = nullptr;
+		ptCurrent = nullptr;
+		//TTextNode::InitializeMemory(1000);
 	}
+
+	char* GetNavCurrent();
+	void SetNavCurrent(char* str);
+	char* GetPtCurrent();
+	void SetPtCurrent(char* str);
+
+
 
 	void Reset();
 	void GoNext();
 	bool IsEnd();
-
 
 	// Navigation
 	void GoNextLine();
@@ -55,19 +49,22 @@ public:
 	void InsertDownLine(char* str); // Insert string to the first position on the lower level
 	void InsertDownSection(char* str); // Insert subjected header of the lower level
 
-	void DeleteNext();
-	void DeleteDown();
+	void DeleteNextLine();
+	void DeleteDownLine();
 
 	// Filestream
-	void Load(char* filename);
+	bool Load(char* filename);
 	void Print(char* filename);
+
+	// Console
 	void Print();
+	void ShowAll();
 };
 
 
-inline Node* TText::ReadRecursion(ifstream& is)
+inline TTextNode* TText::ReadRecursion(ifstream& is)
 {
-	Node* pHead = nullptr, * pTemp = nullptr;
+	TTextNode* pHead = nullptr, * pTemp = nullptr;
 	char str[81];
 	while (!is.eof())
 	{
@@ -76,7 +73,7 @@ inline Node* TText::ReadRecursion(ifstream& is)
 		else if (str[0] == '}') break;
 		else
 		{
-			Node* newNode = new Node(str);
+			TTextNode* newNode = new TTextNode(str);
 			if (pHead == nullptr)
 				pTemp = pHead = newNode;
 			else
@@ -90,7 +87,7 @@ inline Node* TText::ReadRecursion(ifstream& is)
 	return pHead;
 }
 
-inline void TText::PrintFileRecursion(Node* pNode, ofstream& file)
+inline void TText::PrintFileRecursion(TTextNode* pNode, ofstream& file)
 {
 	if (pNode != nullptr)
 	{
@@ -106,12 +103,15 @@ inline void TText::PrintFileRecursion(Node* pNode, ofstream& file)
 	}
 }
 
-inline void TText::PrintRecursion(Node* pNode, ostream& os, int level)
+inline void TText::PrintRecursion(TTextNode* pNode, ostream& os, int level)
 {
 	if (pNode != nullptr)
 	{
 		for (int i = 0; i < level; i++) os << "\t";
-		os << pNode->str << endl;
+
+		if (pNode == navCurrent) os << "=>" << pNode->str << endl;
+		else os << "  " << pNode->str << endl;
+
 		if (pNode->pDown != nullptr)
 		{
 			PrintRecursion(pNode->pDown, os, level+1);
@@ -119,96 +119,167 @@ inline void TText::PrintRecursion(Node* pNode, ostream& os, int level)
 		PrintRecursion(pNode->pNext, os, level);
 	}
 }
+/*
+inline void TText::CleanMemory()
+{
+	for (Reset(); !IsEnd(); GoNext()) ptCurrent->garbage = false;
+	TTextNode* p = TTextNode::memory.pFree;
+	while (p != nullptr)
+	{
+		p->garbage = false;
+		p = p->pNext;
+	}
+	for (p = TTextNode::memory.pFirst; p <= TTextNode::memory.pLast; p++)
+	{
+		if (p->garbage) delete p;
+		p->garbage = true;
+	}
+}
+*/
+
+inline char* TText::GetNavCurrent()
+{
+	if (navCurrent == nullptr) throw "Pointer navCurrent is null";
+	return navCurrent->str;
+}
+
+inline void TText::SetNavCurrent(char* str)
+{
+	if (navCurrent == nullptr) throw "Pointer navCurrent is null";
+	strcpy(navCurrent->str, str);
+}
+
+inline char* TText::GetPtCurrent()
+{
+	if (ptCurrent == nullptr) throw "Pointer ptCurrent is null";
+	return ptCurrent->str;
+}
+
+inline void TText::SetPtCurrent(char* str)
+{
+	if (ptCurrent == nullptr) throw "Pointer ptCurrent is null";
+	strcpy(ptCurrent->str, str);
+}
 
 inline void TText::Reset()
 {
-	navStack.Clear();
+	ptStack.Clear();
 	if (pFirst == nullptr) return;
-	pCurrent = pFirst;
-	navStack.Push(pCurrent);
-	if (pCurrent->pNext != nullptr) navStack.Push(pCurrent->pNext);
-	if (pCurrent->pDown != nullptr) navStack.Push(pCurrent->pDown);
+	ptCurrent = pFirst;
+	ptStack.Push(ptCurrent);
+	if (ptCurrent->pNext != nullptr) ptStack.Push(ptCurrent->pNext);
+	if (ptCurrent->pDown != nullptr) ptStack.Push(ptCurrent->pDown);
 }
 
 inline void TText::GoNext()
 {
-	pCurrent = navStack.Pop();
-	if (pCurrent == pFirst) return;
-	if (pCurrent->pNext != nullptr) navStack.Push(pCurrent->pNext);
-	if (pCurrent->pDown != nullptr) navStack.Push(pCurrent->pDown);
+	ptCurrent = ptStack.Pop();
+	if (ptCurrent == pFirst) return;
+	if (ptCurrent->pNext != nullptr) ptStack.Push(ptCurrent->pNext);
+	if (ptCurrent->pDown != nullptr) ptStack.Push(ptCurrent->pDown);
 
 }
 
 inline bool TText::IsEnd()
 {
-	return navStack.IsEmpty();
+	return ptStack.IsEmpty();
 }
 
 inline void TText::GoNextLine()
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	navStack.Push(pCurrent);
-	pCurrent = pCurrent->pNext;
+	if (navCurrent == nullptr || navCurrent->pNext == nullptr) throw "Current pointer don`t exist";
+	navStack.Push(navCurrent);
+	navCurrent = navCurrent->pNext;
 }
 
 inline void TText::GoBackLine()
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	Node* backNode = navStack.Pop();
-	pCurrent = backNode;
+	if (navCurrent == nullptr || navStack.IsEmpty()) throw "Current pointer don`t exist";
+	TTextNode* backNode = navStack.Pop();
+	navCurrent = backNode;
 }
 
 inline void TText::GoDownLine()
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	navStack.Push(pCurrent);
-	pCurrent = pCurrent->pDown;
+	if (navCurrent == nullptr || navCurrent->pDown == nullptr) throw "Current pointer don`t exist";
+	navStack.Push(navCurrent);
+	navCurrent = navCurrent->pDown;
 }
 
 inline void TText::GoFirstLine()
 {
-	pCurrent = pFirst;
+	navCurrent = pFirst;
+	navStack.Clear();
 }
 
 inline void TText::InsertNextLine(char* str)
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	Node* newNode = new Node(str);
-	newNode->pNext = pCurrent->pNext;
-	pCurrent->pNext = newNode;
+	if (navCurrent == nullptr) throw "Current pointer don`t exist";
+	TTextNode* newNode = new TTextNode(str);
+	newNode->pNext = navCurrent->pNext;
+	navCurrent->pNext = newNode;
 }
 
 inline void TText::InsertNextSection(char* str)
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	Node* newNode = new Node(str);
-	newNode->pDown = pCurrent->pNext;
-	pCurrent->pNext = newNode;
+	if (navCurrent == nullptr) throw "Current pointer don`t exist";
+	TTextNode* newNode = new TTextNode(str);
+	newNode->pDown = navCurrent->pNext;
+	navCurrent->pNext = newNode;
 }
 
 inline void TText::InsertDownLine(char* str)
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	Node* newNode = new Node(str);
-	newNode->pNext = pCurrent->pDown;
-	pCurrent->pDown = newNode;
+	if (navCurrent == nullptr) throw "Current pointer don`t exist";
+	TTextNode* newNode = new TTextNode(str);
+	newNode->pNext = navCurrent->pDown;
+	navCurrent->pDown = newNode;
 }
 
 inline void TText::InsertDownSection(char* str)
 {
-	if (pCurrent == nullptr) throw "Current pointer don`t exist";
-	Node* newNode = new Node(str);
-	newNode->pDown = pCurrent->pDown;
-	pCurrent->pDown = newNode;
+	if (navCurrent == nullptr) throw "Current pointer don`t exist";
+	TTextNode* newNode = new TTextNode(str);
+	newNode->pDown = navCurrent->pDown;
+	navCurrent->pDown = newNode;
+}
+
+inline void TText::DeleteNextLine()
+{
+	if (navCurrent != nullptr)
+	{
+		TTextNode* pDeletable = navCurrent->pNext;
+		if (pDeletable != nullptr)
+		{
+			navCurrent->pNext = pDeletable->pNext;
+			delete pDeletable;
+		}
+	}
+
+}
+
+inline void TText::DeleteDownLine()
+{
+	if (navCurrent != nullptr)
+	{
+		TTextNode* pDeletable = navCurrent->pDown;
+		if (pDeletable != nullptr)
+		{
+			navCurrent->pDown = pDeletable->pNext;
+			delete pDeletable;
+		}
+	}
 }
 
 
 
 
-void TText::Load(char* filename)
+bool TText::Load(char* filename)
 {
 	ifstream file(filename);
+	if (file.bad()) return false;
 	pFirst = ReadRecursion(file);
+	return true;
 }
 
 inline void TText::Print(char* filename)
@@ -220,4 +291,10 @@ inline void TText::Print(char* filename)
 inline void TText::Print()
 {
 	PrintRecursion(pFirst, cout, 0);
+}
+
+inline void TText::ShowAll()
+{
+	for (Reset(); !IsEnd(); GoNext())
+		cout << GetPtCurrent() << endl;
 }

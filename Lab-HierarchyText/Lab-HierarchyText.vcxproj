@@ -142,6 +142,7 @@
     <ClInclude Include="..\TList\TStackList.h" />
     <ClInclude Include="Control.h" />
     <ClInclude Include="TText.h" />
+    <ClInclude Include="TTextNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TText_Test.cpp" />
