@@ -12,8 +12,7 @@
 
 TMemory TTextNode::memory;
 
-
-int main()
+void TextConsole()
 {
 	char filename[100];
 	bool saved = false;
@@ -28,7 +27,7 @@ begin:
 		TText text(30);
 		text.Load(filename);
 		text.GoFirstLine();
-		
+
 
 		while (true)
 		{
@@ -117,4 +116,29 @@ begin:
 
 		}
 	}
+}
+
+void TestCopy()
+{
+	TText a(100);
+	char filename[100];
+	strcpy(filename, "text.txt");
+	a.Load(filename);
+
+	TText* b = a.GetCopy();
+	cout << "===== Start text =====\n";
+	a.Print();
+	cout << "\n===== Copyed text =====\n";
+	b->Print();
+
+}
+
+
+
+
+int main()
+{
+	//TextConsole();
+	TestCopy();
+
 }

@@ -16,6 +16,7 @@ private:
 	TTextNode* ReadRecursion(ifstream& is);
 	void PrintFileRecursion(TTextNode* pNode, ofstream& os);
 	void PrintRecursion(TTextNode* pNode, ostream& os, int level);
+	TTextNode* CopyNode(TTextNode* pCopyable);
 	
 	
 public:
@@ -26,6 +27,7 @@ public:
 		ptCurrent = nullptr;
 		TTextNode::InitializeMemory(memorySize);
 	}
+	TText* GetCopy();
 
 	void CleanMemory();
 
@@ -120,6 +122,21 @@ inline void TText::PrintRecursion(TTextNode* pNode, ostream& os, int level)
 		}
 		PrintRecursion(pNode->pNext, os, level);
 	}
+}
+
+inline TTextNode* TText::CopyNode(TTextNode* pCopyable)
+{
+	TTextNode* pCopyed = new TTextNode(pCopyable->str);
+	if (pCopyable->pDown != nullptr) pCopyed->pDown = CopyNode(pCopyable->pDown);
+	if (pCopyable->pNext != nullptr) pCopyed->pNext = CopyNode(pCopyable->pNext);
+	return pCopyed;
+}
+
+inline TText* TText::GetCopy()
+{
+	TText* res = new TText();
+	res->pFirst = CopyNode(pFirst);
+	return res;
 }
 
 inline void TText::CleanMemory()
